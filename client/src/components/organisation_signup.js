@@ -17,10 +17,6 @@ function OrganisationSignup() {
                     <label>Password</label>
                     <input type="password"  placeholder="Enter password" />
                 </div>
-                <div className="form-group">
-                    <label>Confirm Password</label>
-                    <input type="password"  placeholder="Confirm password" />
-                </div>
                 </form>
         </div>
     )

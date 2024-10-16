@@ -13,10 +13,6 @@ function Login(){
                     <label> Password</label>
                     <input type = "text" placeholder = "Enter password"/>
                 </div>
-                <div>
-                    <label>Confirm Password</label>
-                    <input type = "text" placeholder = "Enter password"/>
-                </div>
             </form>
         </div>
     )

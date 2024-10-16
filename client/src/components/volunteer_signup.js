@@ -17,10 +17,6 @@ import React from "react";
                         <label>Password</label>
                         <input type="password" className="form-control" placeholder="Enter password" />
                     </div>
-                    <div className="form-group">
-                        <label>Confirm Password</label>
-                        <input type="password" className="form-control" placeholder="Confirm password" />
-                    </div>
                     </form>
             </div>
         )
