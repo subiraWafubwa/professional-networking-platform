@@ -1,0 +1,38 @@
+/* Navbar Styles */
+nav {
+    background-color: #55a834; /* Dark background for the navbar */
+    padding: 15px; /* Spacing around the navbar */
+}
+
+ul {
+    list-style-type: none; /* Remove default list styling */
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+    display: flex; /* Use flexbox for horizontal layout */
+    justify-content: space-between; /* Space items between left, center, and right */
+    align-items: center; /* Align vertically in the center */
+    width: 100%; /* Full width for the navbar */
+}
+
+li {
+    margin-right: 20px; /* Space between each nav item */
+}
+
+li.home {
+    margin-right: auto; /* Push the "Home" link to the center */
+    margin-left: auto;
+}
+
+a {
+    color: rgb(255, 255, 255); /* Default link color */
+    text-decoration: dashed; /* Remove underline from links */
+    font-weight: bold; /* Make text bold */
+}
+
+a:hover {
+    color: #3584df; /* Change color on hover */
+}
+
+.active {
+    border-bottom: 2px solid #37a037; /* Underline for active link */
+}

@@ -5,3 +5,90 @@
   --text: hsla(0, 0%, 100%, 0.88);
 }
 
+.login{
+  display: flex; /* Use flexbox for centering */
+  flex-direction: column; /* Stack children vertically */
+  justify-content: center; /* Center vertically */
+  align-items: center; /* Center horizontally */
+  height: 100vh; /* Full viewport height */
+  background-color: #f9f9f9; 
+  max-height: fit-content;
+  background-color: rgb(123, 204, 101);
+  min-height: 100vh;
+}
+.volunteer-sign-up {
+  display: flex; /* Use flexbox for centering */
+  flex-direction: column; /* Stack children vertically */
+  justify-content: center; /* Center vertically */
+  align-items: center; /* Center horizontally */
+  height: 100vh; /* Full viewport height */
+  background-color: #f9f9f9; 
+  max-height: fit-content;
+  background-color: rgb(123, 204, 101);
+  min-height: 100vh;
+}
+
+.form-control{
+  text-align:justify;
+  border-radius: 5px;
+  height:30px;
+  width: 200px;
+  justify-content: center;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.botton{
+margin-right: 10px;
+border-radius: 200px;
+
+}
+/* Centering Styles for Organisation Signup */
+.organisation-sign-up {
+  display: flex; /* Use flexbox for centering */
+  flex-direction: column; /* Stack children vertically */
+  justify-content: center; /* Center vertically */
+  align-items: center; /* Center horizontally */
+  height: 100vh; /* Full viewport height */
+  max-height: fit-content;
+  background-color: rgb(123, 204, 101);
+  min-height: 100vh; /* Light background color for contrast */
+}
+
+h3 {
+  margin-bottom: 20px; /* Space below the heading */
+}
+
+.form-group {
+  margin-bottom: 15px; /* Space between form groups */
+}
+
+.form-control {
+  width: 300px; /* Fixed width for input fields */
+  padding: 10px; /* Padding inside input fields */
+  border: 1px solid #ccc; /* Light border for input fields */
+  border-radius: 5px; /* Rounded corners for input fields */
+}
+
+.button {
+  background-color: #266e50; /* Dark background for button */
+  color: white; /* White text color for button */
+  padding: 10px 15px; /* Padding inside the button */
+  border: none; /* Remove default border */
+  border-radius: 5px; /* Rounded corners for button */
+  cursor: pointer; /* Pointer cursor on hover */
+  margin-top: 15px; /* Same margin as form fields */
+  display: block; /* Ensures the button is treated as a block element */
+  width: fit-content; /* Fit the button to its content width */
+  margin-left: auto; /* Auto margins to center the button */
+  margin-right: auto;
+  width: 150px;
+}
+
+.button:hover {
+  background-color: #105527; /* Darker shade on hover */
+}
+
+p {
+  margin-top: 20px; /* Space above the paragraph */
+}
