@@ -9,6 +9,12 @@ function Navbar() {
         <li>
           <NavLink to="/">Home</NavLink>
         </li>
+        <li>
+          <NavLink to="/VolunteerCertificate">Volunteer Certificate</NavLink>
+        </li>
+        <li>
+          <NavLink to="/GiveCertificate">Give Certificate</NavLink>
+        </li>
       </ul>
     </nav>
   );

@@ -92,3 +92,70 @@ h3 {
 p {
   margin-top: 20px; /* Space above the paragraph */
 }
+
+.give-certificate {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center horizontally */
+  justify-content: center; /* Center vertically */
+  height: 100vh; /* Full viewport height */
+  background-color:  rgb(123, 204, 101);
+}
+
+h1 {
+  position: absolute;
+  top: 50px; /* Adjust this for spacing from the top */
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+  text-align: center;
+}
+
+p {
+  margin-top: 100px; /* Adjust this for spacing between h1 and p */
+  font-size: 18px;
+  line-height: 3.8;
+  text-align: center; /* Center text */
+}
+
+/* Making everything before the colon bold */
+p::before {
+  font-weight: bold;
+}
+
+p {
+  font-weight: bold; /* For the bold parts */
+}
+p::after {
+ font-weight: 500;
+}
+
+.volunteer-certificate {
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
+  height: 100vh; /* Full viewport height */
+  text-align: center; /* Center text */
+  background-color: rgb(123, 204, 101);
+}
+
+h1 {
+  margin-bottom: 20px; /* Reduced space between the heading and the content */
+}
+
+p {
+  margin-bottom: 10px; /* Space between the paragraph and the button */
+}
+
+.btn {
+  padding: 10px 20px; /* Button padding */
+  background-color: #266e50; /* Dark background for the button */
+  color: white; /* White text for the button */
+  border: none; /* Remove button border */
+  border-radius: 5px; /* Rounded corners */
+}
+
+.btn:hover {
+  background-color: rgb(14, 79, 15); /* Darker background on hover */
+}
+
