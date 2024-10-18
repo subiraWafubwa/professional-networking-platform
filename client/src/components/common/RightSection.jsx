@@ -38,6 +38,7 @@ export default function RightSection() {
             pValue="Available Jobs"
             list={jobs}
             listCount={jobCount}
+            object="AvailableJob"
           />
           <Toggle
             state={showRejectedJobs}

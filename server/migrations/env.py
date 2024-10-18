@@ -1,20 +1,9 @@
 import logging
 from logging.config import fileConfig
 
-import sys
-import os
 from flask import current_app
 
 from alembic import context
-
-# Add the server directory to sys.path to ensure imports work correctly
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-# Import your db instance
-from config import db
-
-# Import your models here
-from models import Volunteer, Organization, Job, JobApplication, HourLog, Certificate
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -28,10 +17,10 @@ logger = logging.getLogger('alembic.env')
 
 def get_engine():
     try:
-        # This works with Flask-SQLAlchemy<3 and Alchemical
+        # this works with Flask-SQLAlchemy<3 and Alchemical
         return current_app.extensions['migrate'].db.get_engine()
     except (TypeError, AttributeError):
-        # This works with Flask-SQLAlchemy>=3
+        # this works with Flask-SQLAlchemy>=3
         return current_app.extensions['migrate'].db.engine
 
 
@@ -43,10 +32,12 @@ def get_engine_url():
         return str(get_engine().url).replace('%', '%%')
 
 
-# Add your model's MetaData object here for 'autogenerate' support
-# This is used by Alembic to detect changes
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
 config.set_main_option('sqlalchemy.url', get_engine_url())
-target_metadata = db.metadata
+target_db = current_app.extensions['migrate'].db
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -55,9 +46,9 @@ target_metadata = db.metadata
 
 
 def get_metadata():
-    if hasattr(db, 'metadatas') and db.metadatas.get(None):
-        return db.metadatas[None]
-    return db.metadata
+    if hasattr(target_db, 'metadatas'):
+        return target_db.metadatas[None]
+    return target_db.metadata
 
 
 def run_migrations_offline():
@@ -89,9 +80,9 @@ def run_migrations_online():
 
     """
 
-    # This callback is used to prevent an auto-migration from being generated
+    # this callback is used to prevent an auto-migration from being generated
     # when there are no changes to the schema
-    # Reference: http://alembic.zzzcomputing.com/en/latest/cookbook.html
+    # reference: http://alembic.zzzcomputing.com/en/latest/cookbook.html
     def process_revision_directives(context, revision, directives):
         if getattr(config.cmd_opts, 'autogenerate', False):
             script = directives[0]

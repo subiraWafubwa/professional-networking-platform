@@ -6,6 +6,7 @@ import AccountContext from "../context/AccountContext";
 import { useContext } from "react";
 import NewJobApplication from "../organisation/NewJobApplication";
 import ApprovedJob from "../volunteer/ApprovedJob";
+import AvailableJob from "../volunteer/AvailableJob";
 
 export default function Toggle({
   setState,
@@ -53,6 +54,14 @@ export default function Toggle({
               date="today"
               hoursWorked="5"
               hoursRequired="7"
+            />
+          ) : accountType == "volunteer" && object == "AvailableJob" ? (
+            <AvailableJob
+              title="availablejob"
+              description="desi"
+              date="today"
+              maxHoursRequired="89"
+              status="Pending"
             />
           ) : null}
         </div>

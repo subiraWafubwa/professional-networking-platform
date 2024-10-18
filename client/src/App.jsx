@@ -5,7 +5,7 @@ import Modal from "./components/common/Modal";
 import AccountContext from "./components/context/AccountContext";
 
 function App() {
-  const [accountType, setAccountType] = useState("organization");
+  const [accountType, setAccountType] = useState("volunteer");
   const hasModal = false;
 
   return (
