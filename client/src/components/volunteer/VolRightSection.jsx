@@ -3,18 +3,14 @@ import add from "../../../assets/add.png";
 import "../../index.css";
 import Toggle from "../common/Toggle";
 
-export default function VolRightSection() {
-  const [showJobsCreated, setShowJobsCreated] = useState(true);
+export default function VolRightSection({
+  availableJobs,
+  approvedJobs,
+  rejectedJobs,
+}) {
+  const [showApprovedJobs, setShowApprovedJobs] = useState(true);
   const [showJobs, setShowJobs] = useState(true);
   const [showRejectedJobs, setShowRejectedJobs] = useState(true);
-
-  const approvedJobs = [];
-  const jobs = [];
-  const rejectedJobs = [];
-
-  const approvedJobCount = 2;
-  const jobCount = 8;
-  const rejectedJobCount = 3;
 
   return (
     <div className="right-section">
@@ -24,16 +20,24 @@ export default function VolRightSection() {
           setState={setShowApprovedJobs}
           pValue="Jobs Created"
           list={approvedJobs}
-          listCount={approvedJobCount}
+          listCount={approvedJobs.length}
           object="JobCreated"
         />
         <Toggle
-          state={showApprovedJobs}
-          setState={setShowApprovedJobs}
+          state={showJobs}
+          setState={setShowJobs}
           pValue="New Job Applications"
-          list={approvedJobs}
-          listCount={approvedJobCount}
+          list={availableJobs}
+          listCount={availableJobs.length}
           object="NewJobApplication"
+        />
+        <Toggle
+          state={showRejectedJobs}
+          setState={setShowRejectedJobs}
+          pValue="Rejected jobs"
+          list={rejectedJobs}
+          listCount={rejectedJobs.length}
+          object="JobCreated"
         />
       </div>
       <button id="modal">

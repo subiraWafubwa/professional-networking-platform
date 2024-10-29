@@ -33,6 +33,7 @@ class LogIn(Resource):
             access_token = create_access_token(identity={'type': 'Volunteer', 'id': volunteer.id})
             return {
                 'message': 'Login successful.',
+                'id': volunteer.id,
                 'type': 'Volunteer',
                 'token': access_token,
             }, 200
@@ -42,6 +43,7 @@ class LogIn(Resource):
             access_token = create_access_token(identity={'type': 'Organization', 'id': organization.id})
             return {
                 'message': 'Login successful.',
+                'id': organization.id,
                 'type': 'Organization',
                 'token': access_token,
             }, 200
