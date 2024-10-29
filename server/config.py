@@ -5,13 +5,19 @@ from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager
 
 # Instantiate app, set attributes
 app = Flask(__name__)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
 app.config['SECRET_KEY'] = 'your_secret_key'
+
+# Configuration for JWT expiration (10 days)
+app.config['JWT_SECRET_KEY'] = 'your_secret_key'
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 864000 
 
 # Define metadata, instantiate db
 metadata = MetaData(naming_convention={
@@ -25,3 +31,4 @@ db.init_app(app)
 api = Api(app)
 CORS(app)
 bcrypt = Bcrypt(app)
+jwt = JWTManager(app)

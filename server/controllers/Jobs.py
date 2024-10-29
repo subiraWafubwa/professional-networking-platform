@@ -1,88 +1,115 @@
-from pathlib import Path
-from flask import request
-from flask_restful import Resource
-from config import db
-from models import Job, Organization
+from flask import Blueprint, jsonify, request
+from models import Job, JobApplication, Organization
 from datetime import datetime
+from sqlalchemy import and_
+from config import db
 
-class Jobs(Resource):
-    def get(self):
-        data = Job.query.all()
+jobs_bp = Blueprint('jobs', __name__)
 
-        return {
-            "jobs": [app.to_dict() for app in data]
-        }, 200
-    
-    def post(self):
-        data = request.get_json()
+def check_pending_status(volunteer_id, job_id):
+    pending_application = (
+        db.session.query(JobApplication)
+        .filter(
+            JobApplication.volunteer_id == volunteer_id,
+            JobApplication.job_id == job_id,
+            JobApplication.status == "Pending"
+        )
+        .first()
+    )
+    return pending_application is not None
 
-        organization_id = data.get('organization_id')
-        title = data.get('title')
-        description = data.get('description', "")
-        location = data.get('location', "")
-        total_hours = data.get('total_hours', 0)
+@jobs_bp.route('/jobs/<int:volunteer_id>', methods=['GET'])
+def get_jobs_by_volunteer(volunteer_id):
+    excluded_job_ids = (
+        db.session.query(JobApplication.job_id)
+        .filter(
+            JobApplication.volunteer_id == volunteer_id,
+            JobApplication.status.in_(["Approved", "Rejected"])
+        )
+    ).subquery()
 
-        # Check if the organization exists
-        organization = Organization.query.get(organization_id)
-        if not organization:
-            return {"message": "Organization not found."}, 404
+    jobs = (
+        db.session.query(
+            Job.id,
+            Job.title,
+            Job.description,
+            Job.location,
+            Job.date,
+            Job.positionFilled,
+            Job.total_hours,
+            Organization.organization_name.label("organization_name")
+        )
+        .join(Organization, Job.organization_id == Organization.id)
+        .outerjoin(JobApplication, and_(JobApplication.job_id == Job.id, JobApplication.volunteer_id == volunteer_id))
+        .filter(Job.id.notin_(excluded_job_ids))
+        .all()
+    )
 
-        existing_job = Job.query.filter_by(organization_id=organization_id, title=title).first()
-        if existing_job:
-            return {"message": "This job already exists."}, 400
+    if not jobs:
+        return jsonify({"message": "No available jobs for this volunteer."}), 404
 
-        try:
-            new_job = Job(
-                organization_id=organization_id,
-                title=title,
-                description=description,
-                location=location,
-                date=datetime.today().date(),
-                total_hours=total_hours,
-            )
+    job_data = [
+        {
+            "id": job.id,
+            "title": job.title,
+            "description": job.description,
+            "location": job.location,
+            "date": job.date.isoformat() if job.date else None,
+            "positionFilled": job.positionFilled,
+            "total_hours": job.total_hours,
+            "organization_name": job.organization_name,
+            "isPending": check_pending_status(volunteer_id, job.id)
+        }
+        for job in jobs
+    ]
 
-            db.session.add(new_job)
-            db.session.commit()
+    return jsonify({
+        "message": "Jobs retrieved successfully.",
+        "jobs": job_data
+    }), 200
 
-            return {
-                "message": "Job added successfully",
-                "job": new_job.to_dict()
-            }, 201
+@jobs_bp.route('/apply-for-job', methods=['POST'])
+def apply_for_job():
+    try:
+        volunteer_id = request.json.get('volunteer_id')
+        job_id = request.json.get('job_id')
 
-        except Exception as e:
-            db.session.rollback()
-            return {"message": "An error occurred while adding the job.", "error": str(e)}, 500
+        if volunteer_id is None or job_id is None:
+            return jsonify({"message": "Missing required fields: 'volunteer_id' and 'job_id'."}), 400
+
+        job = Job.query.get(job_id)
+        if not job:
+            return jsonify({"message": "Job not found."}), 404
+
+        if check_pending_status(volunteer_id, job_id):
+            return jsonify({
+                "message": "You have already applied for this job.",
+                "isPending": True
+            }), 200
+
+        new_application = JobApplication(
+            volunteer_id=volunteer_id,
+            job_id=job_id,
+            signed_up_at=datetime.now(),
+            hours_worked=0,
+            status='Pending'
+        )
+
+        db.session.add(new_application)
+        db.session.commit()
         
-class JobDetail(Resource):
-    def delete(self, id):
-        job = Job.query.get(id)
+        return jsonify({
+            "message": "Application submitted successfully.",
+            "job_application": {
+                "id": new_application.id,
+                "volunteer_id": new_application.volunteer_id,
+                "job_id": new_application.job_id,
+                "status": new_application.status,
+                "signed_up_at": new_application.signed_up_at,
+                "isPending": True
+            }
+        }), 201
 
-        if not job:
-            return {"message": "Job not found."}, 404
-
-        try:
-            db.session.delete(job)
-            db.session.commit()
-            return {
-                "message": "Job deleted successfully.",
-                "job_deleted": job.to_dict()                
-            }, 200
-
-        except Exception as e:
-            db.session.rollback()
-            return {"message": "An error occurred while deleting the job.", "error": str(e)}, 500
-
-    def patch(self, id):
-        job = Job.query.get(id)
-
-        if not job:
-            return {"message": "Job not found."}, 404
-
-        try:
-            job.positionFilled = True
-            db.session.commit()
-            return {"message": "Job updated successfully.", "job": job.to_dict()}, 200
-
-        except Exception as e:
-            db.session.rollback()
-            return {"message": "An error occurred while updating the job.", "error": str(e)}, 500
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "An error occurred while submitting the application.", "error": str(e)}), 500

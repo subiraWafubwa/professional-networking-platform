@@ -1,78 +1,57 @@
-from flask import request
-from flask_restful import Resource
-from config import db
-from models import HourLog, Volunteer, JobApplication
+from flask import Blueprint, jsonify, request
+from models import JobApplication, HourLog, db
 from datetime import datetime
 
-class HourLogs(Resource):
-    def get(self):
-        try:
-            hour_logs = HourLog.query.all()
-            if not hour_logs:
-                return {"message": "No hour logs found."}, 404
+hour_log_bp = Blueprint('append_hour_log', __name__)
 
-            return {
-                "message": "Hour logs retrieved successfully.",
-                "hour_logs": [log.to_dict() for log in hour_logs]
-            }, 200
+@hour_log_bp.route('/append-hour-log', methods=['PATCH'])
+def get_hours_log():
+    try:
 
-        except Exception as e:
-            return {"message": "An error occurred while retrieving hour logs.", "error": str(e)}, 500
+        hours_to_add = request.json.get('hours')
+        volunteer_id = request.json.get('volunteer_id')
+        job_id = request.json.get('job_id')
         
-    def post(self):
-        data = request.get_json()
+        # Validate input
+        if hours_to_add is None or volunteer_id is None:
+            return jsonify({"message": "Missing required fields: 'hours' and 'volunteer_id'."}), 400
+        if not isinstance(hours_to_add, int) or hours_to_add <= 0:
+            return jsonify({"message": "Invalid value for 'hours'. Must be a positive integer."}), 400
 
-        volunteer_id = data.get('volunteer_id')
-        job_application_id = data.get('job_application_id')
-        hours = data.get('hours')
-
-        volunteer = Volunteer.query.get(volunteer_id)
-        job_application = JobApplication.query.get(job_application_id)
-
-        if not volunteer:
-            return {"message": "Volunteer not found."}, 404
+        job_application = JobApplication.query.filter_by(job_id=job_id, volunteer_id=volunteer_id, status='Approved').first()
 
         if not job_application:
-            return {"message": "Job application not found."}, 404
+            return jsonify({"message": "No approved job application found for this job and volunteer."}), 404
 
-        if not hours or hours <= 0:
-            return {"message": "Please provide valid hours worked."}, 400
+        job_application.hours_worked += hours_to_add
 
-        try:
-            new_hour_log = HourLog(
-                volunteer_id=volunteer_id,
-                job_applications_id=job_application_id,
-                hours=hours,
-                logged_at=datetime.now()
-            )
+        hour_log = HourLog(
+            volunteer_id=volunteer_id,
+            job_applications_id=job_application.id,
+            hours=hours_to_add,
+            logged_at=datetime.now()
+        )
 
-            db.session.add(new_hour_log)
-            db.session.commit()
+        db.session.add(hour_log)
+        db.session.commit()
 
-            total_hours_worked = db.session.query(db.func.sum(HourLog.hours)).filter_by(job_applications_id=job_application_id).scalar()
+        return jsonify({
+            "message": "Hours successfully added.",
+            "job_application": {
+                "job_application_id": job_application.id,
+                "volunteer_id": job_application.volunteer_id,
+                "job_id": job_application.job_id,
+                "hours_worked": job_application.hours_worked
+            },
+            "hour_log": {
+                "hour_log_id": hour_log.id,
+                "volunteer_id": hour_log.volunteer_id,
+                "job_application_id": hour_log.job_applications_id,
+                "hours": hour_log.hours,
+                "logged_at": hour_log.logged_at
+            }
+        }), 200
 
-            job_application.hours_worked = total_hours_worked or 0
-
-            db.session.commit()
-
-            return {
-                "message": "Hour log created and hours worked updated successfully.",
-                "hour_log": new_hour_log.to_dict(),
-                "updated_hours_worked": job_application.hours_worked
-            }, 201
-
-        except Exception as e:
-            db.session.rollback()
-            return {"message": "An error occurred while creating the hour log.", "error": str(e)}, 500
-        
-class HourLogDetail(Resource):
-    def get(self, id):
-        hour_log = HourLog.query.get(id)
-
-        if not hour_log:
-            return {"message": "Hour log not found."}, 404
-
-        return {
-            "message": "Hour log retrieved successfully.",
-            "hour_log": hour_log.to_dict()
-        }, 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "An error occurred while updating hours.", "error": str(e)}), 500

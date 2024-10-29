@@ -1,5 +1,7 @@
+# login.py
 from flask import request
 from flask_restful import Resource
+from flask_jwt_extended import create_access_token
 from config import bcrypt
 from models import Organization, Volunteer
 
@@ -11,7 +13,7 @@ class LogIn(Resource):
         password = data.get('password')
 
         if not usernameororganizationnameoremail or not password:
-            return {'message': 'Username, organization_name or email; and password are required.'}, 400
+            return {'message': 'Username, organization_name, or email; and password are required.'}, 400
 
         volunteer = None
         organization = None
@@ -26,26 +28,22 @@ class LogIn(Resource):
         if not volunteer and not organization:
             return {'message': 'This organization or volunteer does not exist.'}, 404
 
-        if volunteer:
-            if bcrypt.check_password_hash(volunteer.password, password):
-                volunteer_data = volunteer.to_dict()
-                return {
-                    'message': 'Login successful',
-                    'type': 'Volunteer',
-                    'volunteer': volunteer_data,
-                }, 200
-            else:
-                return {'message': 'Incorrect password.'}, 401
+        # Authenticate Volunteer
+        if volunteer and bcrypt.check_password_hash(volunteer.password, password):
+            access_token = create_access_token(identity={'type': 'Volunteer', 'id': volunteer.id})
+            return {
+                'message': 'Login successful.',
+                'type': 'Volunteer',
+                'token': access_token,
+            }, 200
 
-        if organization:
-            if bcrypt.check_password_hash(organization.password, password):
-                organization_data = organization.to_dict()
-                return {
-                    'message': 'Login successful.',
-                    'type': 'Organization',
-                    'organization': organization_data,
-                }, 200
-            else:
-                return {'message': 'Incorrect password.'}, 401
+        # Authenticate Organization
+        if organization and bcrypt.check_password_hash(organization.password, password):
+            access_token = create_access_token(identity={'type': 'Organization', 'id': organization.id})
+            return {
+                'message': 'Login successful.',
+                'type': 'Organization',
+                'token': access_token,
+            }, 200
 
         return {'message': 'Invalid credentials. Please try again.'}, 401

@@ -2,7 +2,7 @@ import React from "react";
 import "../../index.css";
 import userAvatar from "../../../assets/user.png";
 
-export default function UserProfile() {
+export default function UserProfile({ volunteer }) {
   return (
     <div className="profile">
       <div className="profile-avatar">
@@ -21,8 +21,8 @@ export default function UserProfile() {
             flexDirection: "column",
           }}
         >
-          <h3 className="username">amber59</h3>
-          <p className="email">pguerra@example.com</p>
+          <h3 className="username">{volunteer.username}</h3>
+          <p className="email">{volunteer.email}</p>
         </div>
       </div>
       <div className="profile-info">

@@ -8,15 +8,8 @@ import NewJobApplication from "../organisation/NewJobApplication";
 import ApprovedJob from "../volunteer/ApprovedJob";
 import AvailableJob from "../volunteer/AvailableJob";
 
-export default function Toggle({
-  setState,
-  state,
-  pValue,
-  list,
-  listCount,
-  object,
-}) {
-  const accountType = useContext(AccountContext);
+export default function Toggle({ setState, state, pValue, list, listCount }) {
+  const { accountType } = useContext(AccountContext);
 
   return (
     <div className="book-section">
@@ -24,30 +17,29 @@ export default function Toggle({
         <p>
           {pValue} ({listCount})
         </p>
-        <img src={state ? up : down} />
+        <img src={state ? up : down} alt="toggle arrow" />
       </button>
 
       {state && (
         <div className="list-container">
-          {list.length > 0 && accountType == "volunteer" ? (
-            list.map((item) => {
-              item;
-            })
-          ) : accountType == "organization" && object == "JobCreated" ? (
+          {list.length > 0 && accountType === "Volunteer" ? (
+            list.map((item) => <div key={item.id}>{item.title}</div>)
+          ) : accountType === "Organization" && object === "JobCreated" ? (
             <JobApplication
               title="Product/process development scientist"
               description="Represent focus yourself assume always enjoy. Crime talk people. Star stay rise time."
               date="today"
               hoursRequired="6"
             />
-          ) : accountType == "organization" && object == "NewJobApplication" ? (
+          ) : accountType === "Organization" &&
+            object === "NewJobApplication" ? (
             <NewJobApplication
               applicantName="John"
               jobTitle="mechanic"
               date="today"
               rating="5"
             />
-          ) : accountType == "volunteer" && object == "ApprovedJob" ? (
+          ) : accountType === "Volunteer" && object === "ApprovedJob" ? (
             <ApprovedJob
               title="Title"
               description="fgjfjf"
@@ -55,7 +47,7 @@ export default function Toggle({
               hoursWorked="5"
               hoursRequired="7"
             />
-          ) : accountType == "volunteer" && object == "AvailableJob" ? (
+          ) : accountType === "Volunteer" && object === "AvailableJob" ? (
             <AvailableJob
               title="availablejob"
               description="desi"

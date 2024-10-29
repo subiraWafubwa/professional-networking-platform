@@ -32,9 +32,9 @@ if __name__ == '__main__':
         # Clear existing data
         Volunteer.query.delete()
         Organization.query.delete()
-        Job.query.delete()  # Clear existing jobs
-        JobApplication.query.delete()  # Clear existing job applications
-        HourLog.query.delete()  # Clear existing hour logs
+        Job.query.delete()
+        JobApplication.query.delete()
+        HourLog.query.delete()
         Certificate.query.delete()  # Clear existing certificates
 
         # Seed volunteers
@@ -45,15 +45,13 @@ if __name__ == '__main__':
             email = fake.email()
             password = fake.password()
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            jobs_done = 0
-            overall_rating = 0.0
             
             volunteer = Volunteer(
                 username=username,
                 email=email,
                 password=hashed_password,
-                jobs_done=jobs_done,
-                overall_rating=overall_rating
+                jobs_done=0,  # Initialize jobs_done as 0 for now
+                total_ratings_given=0.0  # Placeholder for the total ratings sum
             )
             volunteers.append(volunteer)
             volunteer_data.append((username, password))
@@ -78,8 +76,6 @@ if __name__ == '__main__':
                 website_url=website_url
             )
             organizations.append(organization)
-
-            # Append the unhashed password data
             organization_data.append((organization_name, password))
 
         db.session.add_all(organizations)
@@ -103,50 +99,42 @@ if __name__ == '__main__':
         db.session.add_all(jobs)
         db.session.commit()
 
-        # Seed job applications
+        # Seed job applications and certificates based on jobs done
         job_applications = []
-        for job in jobs:
-            # Randomly select a volunteer to apply for each job
-            num_applications = randint(1, 3)  # Each job can have 1 to 3 applications
-            selected_volunteers = choices(volunteers, k=num_applications)
-            for volunteer in selected_volunteers:
+        certificates = []
+
+        for volunteer in volunteers:
+            # Randomly assign jobs done for each volunteer
+            jobs_done = randint(1, 3)  # Each volunteer can complete between 1 and 3 jobs
+            volunteer.jobs_done = jobs_done  # Update the jobs_done count for the volunteer
+
+            # Assign job applications and certificates for each job completed
+            completed_jobs = choices(jobs, k=jobs_done)
+            total_ratings_sum = 0
+
+            for job in completed_jobs:
                 job_application = JobApplication(
                     volunteer_id=volunteer.id,
                     job_id=job.id,
                     signed_up_at=datetime.now(),
-                    status=choices(['Approved', 'Rejected', 'Pending'])[0]
+                    status="Approved"  # Set to approved since it's completed
                 )
                 job_applications.append(job_application)
 
+                # Create a certificate with a rating for each completed job
+                rating = randint(1, 5)
+                certificate = Certificate(
+                    volunteer_id=volunteer.id,
+                    job_id=job.id,
+                    rating=rating
+                )
+                certificates.append(certificate)
+                total_ratings_sum += rating
+
+            # Update total_ratings_given as the sum of all ratings
+            volunteer.total_ratings_given = total_ratings_sum
+
         db.session.add_all(job_applications)
-        db.session.commit()
-
-        # Seed hour logs
-        hour_logs = []
-        for job_application in job_applications:
-            hours_logged = randint(1, 8)
-            hour_log = HourLog(
-                volunteer_id=job_application.volunteer_id,
-                job_applications_id=job_application.id,
-                hours=hours_logged,
-                logged_at=datetime.now()
-            )
-            hour_logs.append(hour_log)
-
-        db.session.add_all(hour_logs)
-        db.session.commit()
-
-        # Seed certificates
-        certificates = []
-        for job_application in job_applications:
-            rating = randint(1, 5) 
-            certificate = Certificate(
-                volunteer_id=job_application.volunteer_id,
-                job_id=job_application.job_id,
-                rating=rating
-            )
-            certificates.append(certificate)
-
         db.session.add_all(certificates)
         db.session.commit()
 

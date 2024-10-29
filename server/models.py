@@ -1,4 +1,5 @@
 # models.py
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_serializer import SerializerMixin
 from config import db
 from datetime import datetime
@@ -12,16 +13,22 @@ class Volunteer(db.Model, SerializerMixin):
     password = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
     jobs_done = db.Column(db.Integer, nullable=False)
-    overall_rating = db.Column(db.Float, nullable=False)
-
-    # Serialization rules
-    serialize_only = ('id', 'username', 'email', 'password', 
-                      'created_at', 'jobs_done', 'overall_rating',)
+    total_ratings_given = db.Column(db.Integer, nullable=False)
 
     # Relationships
     certificates = db.relationship('Certificate', back_populates='volunteer', cascade='all, delete-orphan')
     job_applications = db.relationship('JobApplication', back_populates='volunteer', cascade='all, delete-orphan')
     hour_logs = db.relationship('HourLog', back_populates='volunteer', cascade='all, delete-orphan')
+
+    # Specify fields to serialize
+    serialize_only = ('id', 'username', 'email', 'created_at', 'jobs_done', 'total_ratings_given', 'average_rating',)
+
+    @hybrid_property
+    def average_rating(self):
+        if self.certificates:
+            average_rating = sum(certificate.rating for certificate in self.certificates) / len(self.certificates)
+            return min(max(average_rating, 0.0), 5.0)
+        return 0.0
 
 class Organization(db.Model, SerializerMixin):
     __tablename__ = 'organizations'
@@ -32,12 +39,10 @@ class Organization(db.Model, SerializerMixin):
     password = db.Column(db.String, nullable=False)
     website_url = db.Column(db.String, nullable=False)
 
-    # Serialization rules
-    serialize_only = ('id', 'organization_name', 'email', 
-                      'password', 'website_url',)
-
     # Relationships
     jobs = db.relationship('Job', back_populates='organization', cascade='all, delete-orphan')
+
+    serialize_only = ('id', 'organization_name', 'email', 'password', 'website_url',)
 
 class Job(db.Model, SerializerMixin):
     __tablename__ = 'jobs'
@@ -51,16 +56,12 @@ class Job(db.Model, SerializerMixin):
     positionFilled = db.Column(db.Boolean, default=False)
     total_hours = db.Column(db.Integer)
 
-    # Serialization rules
-    serialize_only = ('id', 'organization_id', 'title', 
-                      'description', 'location', 'date', 
-                      'positionFilled', 'total_hours',)
-
     # Relationships
     organization = db.relationship('Organization', back_populates='jobs')
     job_applications = db.relationship('JobApplication', back_populates='job', cascade='all, delete-orphan')
     certificates = db.relationship('Certificate', back_populates='job', cascade='all, delete-orphan')
 
+    serialize_only = ('id', 'organization_id', 'title', 'description', 'date', 'positionFilled', 'total_hours',)
 
 class JobApplication(db.Model, SerializerMixin):
     __tablename__ = 'job_applications'
@@ -72,14 +73,13 @@ class JobApplication(db.Model, SerializerMixin):
     hours_worked = db.Column(db.Integer, default=0)
     status = db.Column(db.Text, nullable=False)
 
-    # Serialization rules
-    serialize_only = ('id', 'volunteer_id', 'job_id', 'signed_up_at', 'hours_worked', 'status',)
-
     # Relationships
     job = db.relationship('Job', back_populates='job_applications')
     volunteer = db.relationship('Volunteer', back_populates='job_applications')
     hour_logs = db.relationship('HourLog', back_populates='job_application', cascade='all, delete-orphan')
-    
+
+    serialize_only = ('id', 'volunteer_id', 'job_id', 'signed_up_at', 'hours_worked', 'status',)
+
 class HourLog(db.Model, SerializerMixin):
     __tablename__ = 'hourlogs'
 
@@ -89,11 +89,11 @@ class HourLog(db.Model, SerializerMixin):
     hours = db.Column(db.Integer, nullable=False)
     logged_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
-    serialize_only = ('id', 'volunteer_id', 'job_applications_id', 'hours', 'logged_at')
-
     # Relationships
     job_application = db.relationship('JobApplication', back_populates='hour_logs')
     volunteer = db.relationship('Volunteer', back_populates='hour_logs')
+
+    serialize_only = ('id', 'volunteer_id', 'job_applications_id', 'hours', 'logged_at',)
 
 class Certificate(db.Model, SerializerMixin):
     __tablename__ = 'certificates'
@@ -103,8 +103,8 @@ class Certificate(db.Model, SerializerMixin):
     job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'), nullable=False)
     rating = db.Column(db.Integer, default=0)
 
-    serialize_only = ('id', 'volunteer_id', 'job_id', 'rating',)
-
     # Relationships
     volunteer = db.relationship('Volunteer', back_populates='certificates')
     job = db.relationship('Job', back_populates='certificates')
+
+    serialize_only = ('id', 'volunteer_id', 'job_id', 'rating',)

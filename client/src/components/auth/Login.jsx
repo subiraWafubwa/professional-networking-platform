@@ -1,14 +1,13 @@
-import React, { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom"; // useNavigate instead of useHistory
+// Login.js
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "../../index.css";
 import logo from "../../../assets/logo.png";
-import SignUpContext from "../context/SignUp"; // Import context
 
 function Login() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { setIsLoggedIn } = useContext(SignUpContext);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -31,8 +30,16 @@ function Login() {
 
       if (response.status === 200) {
         alert("Login successful");
-        setIsLoggedIn(true);
-        navigate("/");
+
+        const { type, id } = data;
+
+        if (type === "Volunteer") {
+          navigate("/volunteer", { state: { id } });
+        } else if (type === "Organization") {
+          navigate("/organization", { state: { id } });
+        } else {
+          alert("Unknown user type.");
+        }
       } else {
         alert(data.message);
       }
@@ -67,17 +74,17 @@ function Login() {
               id="input"
               placeholder="Enter username, organisation name or email"
               value={usernameOrEmail}
-              onChange={(e) => setUsernameOrEmail(e.target.value)} // Update state
+              onChange={(e) => setUsernameOrEmail(e.target.value)}
               required
             />
           </div>
           <div>
             <input
-              type="password" // Should be password type for security
+              type="password"
               id="input"
               placeholder="Enter password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)} // Update state
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
@@ -88,7 +95,6 @@ function Login() {
             </Link>{" "}
             or{" "}
             <Link to="/volunteer_signup" className="custom-link">
-              {" "}
               volunteer
             </Link>
           </p>
@@ -96,9 +102,9 @@ function Login() {
             type="submit"
             className="button"
             style={{ marginTop: "30px" }}
-            disabled={isLoading} // Disable the button while loading
+            disabled={isLoading}
           >
-            {isLoading ? "Logging in..." : "Login"} {/* Show loading state */}
+            {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>

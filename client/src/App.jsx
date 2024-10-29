@@ -1,23 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext } from "react";
 import "./index.css";
-import MainBody from "./components/common/MainBody";
 import Modal from "./components/common/Modal";
-import AccountContext from "./components/context/AccountContext";
+import AppRoutes from "./Routes";
 
-function App() {
-  const [accountType, setAccountType] = useState("volunteer");
+export default function App() {
   const hasModal = false;
 
   return (
     <>
-      <AccountContext.Provider value={accountType}>
-        {hasModal ? <Modal /> : null}
-        <div className="whole-app">
-          <MainBody />
-        </div>
-      </AccountContext.Provider>
+      {hasModal && <Modal />}
+      <div className="whole-app">
+        <AppRoutes />
+      </div>
     </>
   );
 }
-
-export default App;
